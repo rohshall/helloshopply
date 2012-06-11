@@ -57,6 +57,10 @@ def setup_elasticsearch():
   sudo('wget https://github.com/downloads/elasticsearch/elasticsearch/elasticsearch-0.19.4.tar.gz')
   sudo('tar -xvf elasticsearch-0.19.4.tar.gz -C /usr/local/')
   sudo('mv /usr/local/elasticsearch-0.19.4 /usr/local/elasticsearch')
+  sudo('mkdir -p /etc/elasticsearch')
+  sudo('cp elasticsearch/config/elasticsearch.yml /etc/elasticsearch/')
+  # Make sure we are only listening on the localhost
+  sudo("echo 'network.bind_host: 127.0.0.1' >> /etc/elasticsearch/elasticsearch.yml")
   # elasticsearch is java-based
   sudo('apt-get install -y openjdk-7-jre-headless')
   sudo('java -version')
@@ -64,7 +68,13 @@ def setup_elasticsearch():
   sudo('/usr/local/elasticsearch/bin/plugin -install elasticsearch/elasticsearch-cloud-aws/1.6.0')
   put('elasticsearch.yml', '/usr/local/elasticsearch/config/', use_sudo=True)
   put('logging.yml', '/usr/local/elasticsearch/config/', use_sudo=True)
-  sudo('/usr/local/elasticsearch/bin/elasticsearch -f')
+  put('elasticsearch', '/etc/init.d/')
+  # make the init script executable 
+  sudo('chmod u+x /etc/init.d/elasticsearch')
+  # install the service
+  sudo('update-rc.d elasticsearch defaults')
+  sudo('/etc/init.d/elasticsearch start')
+
 
 def current():
   pass
