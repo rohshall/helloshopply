@@ -1,0 +1,11 @@
+cluster.name: shopply_salil
+cloud:
+  aws:
+    access_key: AKIAJJRRIECTCWE3RRSA
+    secret_key: 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
+discovery:
+  type: ec2
+gateway:
+  type: s3
+  s3:
+    bucket: shopply_salil
