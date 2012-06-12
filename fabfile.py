@@ -64,6 +64,8 @@ def setup_elasticsearch():
   sudo('rm elasticsearch-0.19.4.tar.gz')
   # Configure elasticsearch
   sudo('mkdir -p /etc/elasticsearch')
+  sudo('mkdir -p /var/log/elasticsearch')
+  sudo('mkdir -p /var/lib/elasticsearch')
   # Make sure we are only listening on the localhost
   sudo("echo 'network.bind_host: 127.0.0.1' >> elasticsearch-0.19.4/config/elasticsearch.yml")
   sudo('cp elasticsearch-0.19.4/config/elasticsearch.yml /etc/elasticsearch/')
@@ -83,5 +85,5 @@ def setup_elasticsearch_service():
   sudo('/etc/init.d/elasticsearch start')
 
 
-def current():
-  pass
+def check_status():
+  sudo('service --status-all')
