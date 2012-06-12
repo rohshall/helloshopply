@@ -1,3 +1,0 @@
-gateway: DEBUG
-org.apache: WARN
-discovery: TRACE

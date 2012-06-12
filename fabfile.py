@@ -1,5 +1,6 @@
 import sys
 import time
+import os
 import boto
 from fabric.api import env, sudo
 from fabric.operations import put
@@ -8,7 +9,8 @@ from fabric.operations import put
 AMI = 'ami-ac9943c5'
 KEYPAIR = 'shopplykey'
 # path to the SSH key for the EC2 instance
-key_path = '/home/salil/.ssh/shopplykey.pem'
+HOME = os.environ['HOME']
+key_path = HOME + '/.ssh/shopplykey.pem'
 # instance host
 HOST = 'ec2-107-22-67-10.compute-1.amazonaws.com'
 
@@ -50,25 +52,30 @@ def setup_packages():
   sudo('apt-get install -y python python-pycurl python-pip')
   sudo('pip install tornado') # python web server
   sudo('pip install pyes') # python elasticsearch client
+  # elasticsearch is java-based
+  sudo('apt-get install -y openjdk-7-jre-headless')
+  sudo('java -version')
 
 
 def setup_elasticsearch():
   """Setup elasticsearch by downloading the server and configuring it"""
-  sudo('wget https://github.com/downloads/elasticsearch/elasticsearch/elasticsearch-0.19.4.tar.gz')
-  sudo('tar -xvf elasticsearch-0.19.4.tar.gz -C /usr/local/')
-  sudo('mv /usr/local/elasticsearch-0.19.4 /usr/local/elasticsearch')
+  sudo('curl -k -L -o elasticsearch-0.19.4.tar.gz http://github.com/downloads/elasticsearch/elasticsearch/elasticsearch-0.19.4.tar.gz')
+  sudo('tar -xvf elasticsearch-0.19.4.tar.gz')
+  sudo('rm elasticsearch-0.19.4.tar.gz')
+  # Configure elasticsearch
   sudo('mkdir -p /etc/elasticsearch')
-  sudo('cp elasticsearch/config/elasticsearch.yml /etc/elasticsearch/')
   # Make sure we are only listening on the localhost
-  sudo("echo 'network.bind_host: 127.0.0.1' >> /etc/elasticsearch/elasticsearch.yml")
-  # elasticsearch is java-based
-  sudo('apt-get install -y openjdk-7-jre-headless')
-  sudo('java -version')
-  # install the aws plugin for elasticsearch
-  sudo('/usr/local/elasticsearch/bin/plugin -install elasticsearch/elasticsearch-cloud-aws/1.6.0')
-  put('elasticsearch.yml', '/usr/local/elasticsearch/config/', use_sudo=True)
-  put('logging.yml', '/usr/local/elasticsearch/config/', use_sudo=True)
-  put('elasticsearch', '/etc/init.d/')
+  sudo("echo 'network.bind_host: 127.0.0.1' >> elasticsearch-0.19.4/config/elasticsearch.yml")
+  sudo('cp elasticsearch-0.19.4/config/elasticsearch.yml /etc/elasticsearch/')
+  sudo("echo -e 'gateway: DEBUG\norg.apache: WARN\ndiscovery: TRACE' >> elasticsearch-0.19.4/config/logging.yml")
+  sudo('cp elasticsearch-0.19.4/config/logging.yml /etc/elasticsearch/')
+  sudo('mv elasticsearch-0.19.4 /usr/local/elasticsearch')
+  # Since we are going to use elasticsearch locally, no need to install the aws plugin for elasticsearch
+
+
+def setup_elasticsearch_service():
+  # Create the service
+  put('elasticsearch', '/etc/init.d/', use_sudo=True)
   # make the init script executable 
   sudo('chmod u+x /etc/init.d/elasticsearch')
   # install the service
