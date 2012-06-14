@@ -50,40 +50,17 @@ def setup_packages():
   """install necessary packages"""
   sudo('apt-get -y update')
   sudo('apt-get install -y python python-pycurl python-pip')
-  sudo('pip install tornado') # python web server
-  sudo('pip install pyes') # python elasticsearch client
-  # elasticsearch is java-based
-  sudo('apt-get install -y openjdk-7-jre-headless')
-  sudo('java -version')
-
+  sudo('pip install tornado pyes') # install python web server and elasticsearch client
 
 def setup_elasticsearch():
-  """Setup elasticsearch by downloading the server and configuring it"""
-  sudo('curl -k -L -o elasticsearch-0.19.4.tar.gz http://github.com/downloads/elasticsearch/elasticsearch/elasticsearch-0.19.4.tar.gz')
-  sudo('tar -xvf elasticsearch-0.19.4.tar.gz')
-  sudo('rm elasticsearch-0.19.4.tar.gz')
-  # Configure elasticsearch
-  sudo('mkdir -p /etc/elasticsearch')
-  sudo('mkdir -p /var/log/elasticsearch')
-  sudo('mkdir -p /var/lib/elasticsearch')
-  # Make sure we are only listening on the localhost
-  sudo("echo 'network.bind_host: 127.0.0.1' >> elasticsearch-0.19.4/config/elasticsearch.yml")
-  sudo('cp elasticsearch-0.19.4/config/elasticsearch.yml /etc/elasticsearch/')
-  sudo("echo -e 'gateway: DEBUG\norg.apache: WARN\ndiscovery: TRACE' >> elasticsearch-0.19.4/config/logging.yml")
-  sudo('cp elasticsearch-0.19.4/config/logging.yml /etc/elasticsearch/')
-  sudo('mv elasticsearch-0.19.4 /usr/local/elasticsearch')
-  # Since we are going to use elasticsearch locally, no need to install the aws plugin for elasticsearch
-
-
-def setup_elasticsearch_service():
-  # Create the service
-  put('elasticsearch', '/etc/init.d/', use_sudo=True)
-  # make the init script executable 
-  sudo('chmod u+x /etc/init.d/elasticsearch')
-  # install the service
-  sudo('update-rc.d elasticsearch defaults')
-  sudo('/etc/init.d/elasticsearch start')
+  # setup elasticsearch by downloading the server and configuring it
+  sudo('wget http://github.com/downloads/elasticsearch/elasticsearch/elasticsearch-0.19.4.deb')
+  # Ubuntu comes with openjdk-6-jre installation
+  sudo('dpkg -i elasticsearch-0.19.4.deb')
+  sudo('rm elasticsearch-0.19.4.deb')
 
 
 def check_status():
-  sudo('service --status-all')
+  sudo('service elasticsearch status')
+
+
