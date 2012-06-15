@@ -77,6 +77,7 @@ def start_service():
 
 
 def check_status():
+  open_shell()
   sudo('service jenkins status')
   sudo('service elasticsearch status')
   sudo('service shopply status')
