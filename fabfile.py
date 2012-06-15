@@ -51,6 +51,7 @@ def setup_packages():
   sudo('apt-get -y update')
   sudo('apt-get install -y python python-pycurl python-pip')
   sudo('pip install tornado pyes') # install python web server and elasticsearch client
+  sudo('apt-get install -y git')
 
 def setup_elasticsearch():
   # setup elasticsearch by downloading the server and configuring it
