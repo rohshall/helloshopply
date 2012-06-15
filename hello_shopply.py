@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import hello_es
 import tornado.ioloop
 import tornado.options

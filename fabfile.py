@@ -52,6 +52,13 @@ def setup_packages():
   sudo('apt-get install -y python python-pycurl python-pip')
   sudo('pip install tornado pyes') # install python web server and elasticsearch client
   sudo('apt-get install -y git')
+  sudo('git config --global user.name "Salil Wadnerkar"')
+  sudo('git config --global user.email rohshall@gmail.com')
+  sudo('ssh-keygen -C "rohshall@gmail.com" -t rsa')
+  sudo('git clone git@github.com:rohshall/helloshopply.git')
+  sudo('mv shopply.conf /etc/init')
+  sudo('initctl reload-configuration')
+
 
 def setup_elasticsearch():
   # setup elasticsearch by downloading the server and configuring it
@@ -61,7 +68,19 @@ def setup_elasticsearch():
   sudo('rm elasticsearch-0.19.4.deb')
 
 
+def start_service():
+  sudo('stop shopply')
+  sudo('git reset --hard')
+  sudo('git pull')
+  sudo('start shopply')
+
+
 def check_status():
+  sudo('git pull')
+  sudo('mv shopply.conf /etc/init')
+  sudo('initctl reload-configuration')
+  sudo('start shopply')
   sudo('service elasticsearch status')
+  sudo('service shopply status')
 
 
