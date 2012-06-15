@@ -49,7 +49,7 @@ def setup_packages():
   sudo("sh -c 'echo deb http://pkg.jenkins-ci.org/debian binary/ > /etc/apt/sources.list.d/jenkins.list'")
   sudo('apt-get -y update')
   sudo('apt-get install -y python python-pycurl python-pip jenkins')
-  sudo('pip install tornado pyes') # install python web server and elasticsearch client
+  sudo('pip install tornado pyes nose') # install python web server and elasticsearch client
   sudo('apt-get install -y git')
   sudo('git config --global user.name "Salil Wadnerkar"')
   sudo('git config --global user.email rohshall@gmail.com')
@@ -77,7 +77,7 @@ def start_service():
 
 
 def check_status():
-  open_shell()
+  sudo('pip install nose')
   sudo('service jenkins status')
   sudo('service elasticsearch status')
   sudo('service shopply status')
