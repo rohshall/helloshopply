@@ -2,8 +2,8 @@ import sys
 import time
 import os
 import boto
-from fabric.api import env, sudo
-from fabric.operations import put
+from fabric.api import env, sudo, cd, local
+from fabric.operations import get, put, open_shell
 
 # EC2 config
 AMI = 'ami-ac9943c5'
@@ -13,6 +13,11 @@ HOME = os.environ['HOME']
 key_path = HOME + '/.ssh/shopplykey.pem'
 # instance host
 HOST = 'ec2-107-22-67-10.compute-1.amazonaws.com'
+# set up remote environment for fabric
+# DNS entry of our instance
+env.hosts = [HOST]
+env.user = 'ubuntu'
+env.key_filename = key_path
 
 
 def launch_ec2_instance():
@@ -38,25 +43,20 @@ def launch_ec2_instance():
   print 'Instance started. Public DNS: ', instance.dns_name
 
 
-def live():
-  """set up remote environment for fabric""" 
-  # DNS entry of our instance
-  env.hosts = [HOST]
-  env.user = 'ubuntu'
-  env.key_filename = key_path
-
-
 def setup_packages():
   """install necessary packages"""
+  sudo('wget -q -O - http://pkg.jenkins-ci.org/debian/jenkins-ci.org.key | sudo apt-key add -')
+  sudo("sh -c 'echo deb http://pkg.jenkins-ci.org/debian binary/ > /etc/apt/sources.list.d/jenkins.list'")
   sudo('apt-get -y update')
-  sudo('apt-get install -y python python-pycurl python-pip')
+  sudo('apt-get install -y python python-pycurl python-pip jenkins')
   sudo('pip install tornado pyes') # install python web server and elasticsearch client
   sudo('apt-get install -y git')
   sudo('git config --global user.name "Salil Wadnerkar"')
   sudo('git config --global user.email rohshall@gmail.com')
   sudo('ssh-keygen -C "rohshall@gmail.com" -t rsa')
   sudo('git clone git@github.com:rohshall/helloshopply.git')
-  sudo('mv shopply.conf /etc/init')
+  with cd('helloshopply'):
+    sudo('cp shopply.conf /etc/init')
   sudo('initctl reload-configuration')
 
 
@@ -70,17 +70,14 @@ def setup_elasticsearch():
 
 def start_service():
   sudo('stop shopply')
-  sudo('git reset --hard')
-  sudo('git pull')
+  with cd('helloshopply'):
+    sudo('git reset --hard')
+    sudo('git pull')
   sudo('start shopply')
 
 
 def check_status():
-  sudo('git pull')
-  sudo('mv shopply.conf /etc/init')
-  sudo('initctl reload-configuration')
-  sudo('start shopply')
+  sudo('service jenkins status')
   sudo('service elasticsearch status')
   sudo('service shopply status')
-
-
+  local('curl -i -H "Accept: application/json" ec2-107-22-67-10.compute-1.amazonaws.com:8888')
