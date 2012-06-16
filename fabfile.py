@@ -104,6 +104,12 @@ def install_web_monitoring_locally_on_ubuntu():
 SERVICES = { 'jenkins': 8080, 'shopply': 8888, 'ganglia-monitor': 8649 }
 
 def check_status():
+  with cd('helloshopply'):
+    sudo('git reset --hard')
+    sudo('git pull')
+    sudo('cp service_monitor.py /usr/lib/ganglia/python_modules')
+  sudo('service ganglia-monitor stop')
+  sudo('service ganglia-monitor start')
   """check the status of all servers - elasticsearch and tornado for application and jenkins for continuous integration
   and ganglia-monitor for instance health-check. And also whether we can access these services from local host"""
   for service, port in SERVICES.iteritems():

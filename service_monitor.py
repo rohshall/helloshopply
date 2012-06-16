@@ -12,7 +12,7 @@ def get_service_status(service_name):
   port = port_map[service_name]
   # check whether we can access this service from the host
   sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-  sock.settimeout(4)
+  sock.settimeout(6)
   try:
     sock.connect(('localhost', port))
   except (socket.error, socket.timeout), e:
