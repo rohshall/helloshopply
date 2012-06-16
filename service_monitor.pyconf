@@ -1,0 +1,26 @@
+modules {
+  module {
+    name = "service_monitor"
+    language = "python"
+    param ShopplyPort {
+        value = 8888
+    }
+    param JenkinsPort {
+        value = 8080
+    }
+  }
+}
+
+/* Collection groups for the service monitor python module */
+collection_group {
+  collect_every = 10
+  time_threshold = 50
+  metric {
+    name = "ShopplyService"
+    value_threshold = 1.0
+  }
+  metric {
+    name = "JenkinsService"
+    value_threshold = 1.0
+  }
+}
