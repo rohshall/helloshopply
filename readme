@@ -9,8 +9,49 @@
                                          
 ================================================================
 
-This project is a simple bootstrap using Python, Tornado, Gunicorn, and ElasticSearch.
+This project is a simple bootstrap using Python, Tornado, ElasticSearch and Ganglia.
 
-To get this running, you will need to have all of the above setup and configured.
+It is a fork of https://github.com/dlemphers/helloshopply
 
-Any questions, email coding@shopply.com                                         
+To get this running on EC2 instance, you will need to have all of the above setup and configured.
+ I am using a Ubuntu instance. So, the deployment instructions for you may be different.
+
+You need to install
+
+1. boto to set up the EC2 instance.
+   pip install boto
+
+2. fabric to run scripts on the EC2 instance
+   pip install fabric
+
+3. This application uses Tornado as server:
+   apt-get install -y python-pycurl python-pip
+   pip install tornado
+
+4. Elasticsearch is used for query handling:
+   wget http://github.com/downloads/elasticsearch/elasticsearch/elasticsearch-0.19.4.deb
+   dpkg -i elasticsearch-0.19.4.deb
+   rm elasticsearch-0.19.4.deb
+   
+   Install Python client for elasticsearch:
+   pip install pyes
+
+5. It uses Jenkins for continuous integration. Run the server:
+  wget -q -O - http://pkg.jenkins-ci.org/debian/jenkins-ci.org.key | sudo apt-key add -
+  sh -c 'echo deb http://pkg.jenkins-ci.org/debian binary/ > /etc/apt/sources.list.d/jenkins.list'
+  apt-get -y update
+  apt-get install -y jenkins
+
+6. Install ganglia for EC2 instance monitoring.
+   We need to install 
+   a) ganglia-monitor on each of the nodes we are running and 
+      apt-get install -y ganglia-monitor
+   b) gmetad and ganglia-webfrontend on the monitoring host
+      apt-get install -y gmetad ganglia-frontend
+
+Ubuntu ganglia packages do not come with python_modules support. So, ganglia installation needs some tweaking on Ubuntu.
+Refer 'fabfile.py' for details.
+
+
+Any questions, email rohshall@gmail.com
+
