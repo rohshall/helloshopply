@@ -8,6 +8,9 @@ modules {
     param JenkinsPort {
         value = 8080
     }
+    param ElasticsearchPort {
+        value = 9200
+    }
   }
 }
 
@@ -21,6 +24,10 @@ collection_group {
   }
   metric {
     name = "JenkinsService"
+    value_threshold = 1.0
+  }
+  metric {
+    name = "ElasticsearchService"
     value_threshold = 1.0
   }
 }

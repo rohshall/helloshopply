@@ -4,7 +4,7 @@ import socket
 descriptors = []
 
 
-port_map = {'ShopplyService': 8888, 'JenkinsService': 8080}
+port_map = {'ShopplyService': 8888, 'JenkinsService': 8080, 'ElasticsearchService': 9200}
 
 
 def get_service_status(service_name):
@@ -28,25 +28,17 @@ def metric_init(params):
   global descriptors
   print '[PyProcessMonitor] Received the following parameters: %s' % params
   port_map.update((key, int(val)) for (key, val) in params.iteritems())
-  d1 = {'name': 'ShopplyService',
+  descriptors = [
+    {'name': service,
       'call_back': get_service_status,
       'time_max': 90,
       'value_type': 'uint',
       'units': 'N',
       'slope': 'both',
       'format': '%u',
-      'description': 'Service Status module metric (shopply service)',
+      'description': 'Service Status module metric (%s)' % service,
       'groups': 'service'}
-  d2 = {'name': 'JenkinsService',
-      'call_back': get_service_status,
-      'time_max': 90,
-      'value_type': 'uint',
-      'units': 'N',
-      'slope': 'both',
-      'format': '%hu',
-      'description': 'Service Status module metric (Jenkins service)',
-      'groups': 'service'}
-  descriptors = [d1,d2]
+    for service in port_map]
   return descriptors
 
 
@@ -55,10 +47,11 @@ def metric_cleanup():
   pass
 
 
-#This code is for debugging and unit testing    
+# This code is for debugging and unit testing    
 if __name__ == '__main__':
-  params = {'ShopplyPort': '8888', 'JenkinsPort': '8080'}
+  params = dict((service.replace('Service', 'Port'), port) for service, port in port_map.iteritems())
   metric_init(params)
+  print descriptors
   for d in descriptors:
     v = d['call_back'](d['name'])
     print 'value for %s is %u' % (d['name'],  v)

@@ -63,7 +63,6 @@ def install_packages():
   sudo('pip install tornado pyes nose')
 
 
-
 def setup_repo():
   """sets up the repo for user jenkins for the continuous integration tests"""
   sudo('git config --global user.name "jenkins ci"')
@@ -80,15 +79,16 @@ def setup_repo():
     sudo('mkdir /usr/lib/ganglia/python_modules')
     sudo('cp service_monitor.py /usr/lib/ganglia/python_modules')
   sudo('initctl reload-configuration')
+  sudo('service elasticsearch start')
+  sudo('service ganglia-monitor start')
 
 
 def start_service():
   """pull the changes from the git repository and start the service"""
-  sudo('stop shopply')
   with cd('helloshopply'):
     sudo('git reset --hard')
     sudo('git pull')
-  sudo('start shopply')
+  sudo('service shopply restart')
 
 
 def install_web_monitoring_locally_on_ubuntu():
@@ -104,17 +104,14 @@ def install_web_monitoring_locally_on_ubuntu():
 SERVICES = { 'jenkins': 8080, 'shopply': 8888, 'ganglia-monitor': 8649 }
 
 def check_status():
+  with cd('helloshopply'):
+    # ganglia installation needs some tweaking on Ubuntu because it did not install the python_modules that
+    # we need to extend standard monitoring report
+    sudo('cp modpython.conf service_monitor.pyconf /etc/ganglia/conf.d/')
+    sudo('cp service_monitor.py /usr/lib/ganglia/python_modules')
+    sudo('service ganglia-monitor restart')
   """check the status of all servers - elasticsearch and tornado for application and jenkins for continuous integration
   and ganglia-monitor for instance health-check. And also whether we can access these services from local host"""
-  # ganglia installation needs some tweaking on Ubuntu because it did not install the python_modules that
-  # we need to extend standard monitoring report
-  with cd('helloshopply'):
-    sudo('git reset --hard')
-    sudo('git pull')
-    sudo('mkdir /etc/ganglia/conf.d')
-    sudo('cp modpython.conf service_monitor.pyconf /etc/ganglia/conf.d/')
-    sudo('mkdir /usr/lib/ganglia/python_modules')
-    sudo('cp service_monitor.py /usr/lib/ganglia/python_modules')
   for service, port in SERVICES.iteritems():
     # check the service status on remote; except ganglia-monitor which does not support 'status' command
     if service != 'ganglia-monitor':
