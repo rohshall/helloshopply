@@ -61,6 +61,11 @@ def install_packages():
   sudo('apt-get install -y python python-pycurl python-pip jenkins git ganglia-monitor')
   # install python web server and elasticsearch client
   sudo('pip install tornado pyes nose')
+  # Install local repository as current user 'Ubuntu'
+  run('git config --global user.name "Salil Wadnerkar"')
+  run('git config --global user.email rohshall@gmail.com')
+  run('ssh-keygen -C "rohshall@gmail.com" -t rsa')
+  run('git clone git@github.com:rohshall/helloshopply.git')
 
 
 def setup_repo():
@@ -85,9 +90,10 @@ def setup_repo():
 
 def start_service():
   """pull the changes from the git repository and start the service"""
+  # pull the repo as a normal user
   with cd('helloshopply'):
-    sudo('git reset --hard')
-    sudo('git pull')
+    run('git reset --hard')
+    run('git pull')
   sudo('service shopply restart')
 
 
@@ -104,12 +110,6 @@ def install_web_monitoring_locally_on_ubuntu():
 SERVICES = { 'jenkins': 8080, 'shopply': 8888, 'ganglia-monitor': 8649 }
 
 def check_status():
-  with cd('helloshopply'):
-    sudo('git reset --hard')
-    sudo('git pull')
-    sudo('cp service_monitor.py /usr/lib/ganglia/python_modules')
-  sudo('service ganglia-monitor stop')
-  sudo('service ganglia-monitor start')
   """check the status of all servers - elasticsearch and tornado for application and jenkins for continuous integration
   and ganglia-monitor for instance health-check. And also whether we can access these services from local host"""
   for service, port in SERVICES.iteritems():
